@@ -16,6 +16,7 @@ The audience is normal users, not contributors. Explain what each page/button/sh
 - **Design system**: Kami parchment system. Read `~/www/kaku-site/DESIGN.md` before any visual change. Match the existing pages; do not invent new components.
 - **Doc pages** (EN under `docs/`, ZH under `zh/docs/`, kept in lockstep):
   Install (`index.html`), Guide (`guide.html`), Features (`features.html`), CLI Reference (`cli.html`), Configuration (`configuration.html`), Keybindings (`keybindings.html`), FAQ (`faq.html`), Contributing (`contributing.html`).
+- **Compare** lives at `/compare` and `/zh/compare`, same chrome as About. That is the home for iTerm2 / Warp / Ghostty / WezTerm / Terminal.app questions. Do not add a Mole-style `/blog` tree unless there are several dated essays to publish.
 - **Guide vs Features**: Guide is the narrative onboarding walkthrough (first launch, then tabs/panes, shell, AI, tools, settings). Features is feature-by-feature reference. Keep the Guide short and link out to the reference pages; do not duplicate config tables there.
 - **Screenshots**: `shots/kaku-dark.webp` and `shots/kaku-light.webp` (1920x1192). Reuse them with `<figure class="shot">`. Kaku is a native terminal, so CDP/browser screenshots do not apply to the app; only capture new app shots if the maintainer explicitly asks (build `make app` or use `/Applications/Kaku.app`, then `screencapture`).
 
@@ -44,6 +45,7 @@ User-facing docs are public. Do not copy feature claims from a subagent summary 
 6. **Verify before declaring done**:
    - `python3 scripts/highlight.py --check` (0 files need highlighting).
    - `python3 scripts/build_markdown.py --check` and `python3 scripts/build_feed.py --check`: the `.md` twin beside every page and `feeds/pages.jsonl` are generated from the HTML, so run both without `--check` after editing HTML and commit the regenerated files with it. A new page also needs the `<link rel="alternate" type="text/markdown">` head tag (`DESIGN.md`).
+   - `python3 scripts/check_sitemap.py`: sitemap locs match `trailingSlash: false`, and lastmod is not older than the newest committed HTML or agent-facing index. Bump `sitemap.xml`, `sitemap-index.xml`, and `schemamap.xml` with the content.
    - Internal links resolve under `cleanUrls` (every `/docs/x` has `docs/x.html`).
    - HTML well-formed (no unclosed/stray tags) on new/edited pages.
    - EN and ZH parity: same sections, same anchors, same tables.
