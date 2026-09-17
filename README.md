@@ -2,9 +2,16 @@
   <img src="https://gw.alipayobjects.com/zos/k/6h/dwarf.svg" width="120" />
   <h1>Kaku</h1>
   <p><em>An AI-friendly Mac terminal with sensible defaults, ready out of the box.</em></p>
+  <p>
+    <a href="https://kaku.fun">Website</a> ·
+    <a href="https://kaku.fun/docs/">Docs</a> ·
+    <a href="https://kaku.fun/compare">Compare</a> ·
+    <a href="https://github.com/tw93/Kaku/releases/latest">Download</a>
+  </p>
 </div>
 
 <p align="center">
+  <a href="https://kaku.fun"><img src="https://img.shields.io/badge/website-kaku.fun-1B365D?style=flat-square" alt="Website"></a>
   <a href="https://github.com/tw93/Kaku/stargazers"><img src="https://img.shields.io/github/stars/tw93/Kaku?style=flat-square" alt="Stars"></a>
   <a href="https://github.com/tw93/Kaku/releases"><img src="https://img.shields.io/github/v/tag/tw93/Kaku?label=version&style=flat-square" alt="Version"></a>
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License"></a>
@@ -18,7 +25,7 @@
 
 ## Why
 
-Kaku (書く, かく) means “to write” in Japanese. It is based on WezTerm, with fonts, themes, shell integration, and Mac shortcuts already configured. Lua settings remain available when you want to customize it.
+Kaku (書く, かく) means “to write” in Japanese. It is a macOS terminal based on WezTerm, with fonts, themes, shell integration, and Mac shortcuts already configured. Lua settings remain available when you want to customize it. The product site is [kaku.fun](https://kaku.fun).
 
 Part of a trilogy: [Kaku](https://github.com/tw93/Kaku) (書く) writes code, [Waza](https://github.com/tw93/Waza) (技) drills habits, [Kami](https://github.com/tw93/Kami) (紙) ships documents. Think of them as a family: Kaku is the dad, Waza the big sister, Kami the little sister.
 
@@ -80,6 +87,8 @@ For authentication, models, API Mode, and tool settings, see the [AI assistant d
 
 **Is there a Windows or Linux version?** Not currently. Kaku is macOS-only for now.
 
+**How is Kaku different from iTerm2, Warp, Ghostty, or WezTerm?** See [kaku.fun/compare](https://kaku.fun/compare).
+
 **Can I use transparent windows?** Yes, set `config.window_background_opacity` in `~/.config/kaku/kaku.lua`.
 
 **The `kaku` command is missing.** Run `/Applications/Kaku.app/Contents/MacOS/kaku init --update-only && exec zsh -l`, then `kaku doctor`.
@@ -88,6 +97,8 @@ Full FAQ: [docs/faq.md](docs/faq.md)
 
 ## Docs
 
+- [Website](https://kaku.fun) - product site, install, and English / Chinese docs
+- [Compare](https://kaku.fun/compare) - Kaku vs iTerm2, Warp, Ghostty, WezTerm, and Terminal.app
 - [Keybindings](docs/keybindings.md) - full shortcut reference
 - [Features](docs/features.md) - AI assistant, lazygit, yazi, remote files, shell suite
 - [Configuration](docs/configuration.md) - themes, fonts, custom keybindings, Lua API

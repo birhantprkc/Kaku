@@ -4,6 +4,10 @@
 
 Not currently. Kaku is macOS-only while the macOS experience is being polished. Windows and Linux may come later.
 
+## How is Kaku different from iTerm2, Warp, Ghostty, or WezTerm?
+
+Kaku is a WezTerm-based Mac terminal with fonts, themes, tabs, panes, and shell tools already set, plus an optional assistant that uses the AI service you configure. See the comparison on the website: https://kaku.fun/compare
+
 ## Can I use a transparent window?
 
 Yes. Add to `~/.config/kaku/kaku.lua`:
