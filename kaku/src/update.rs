@@ -1,4 +1,4 @@
-use anyhow::{Context, anyhow, bail};
+use anyhow::{anyhow, bail, Context};
 use clap::Parser;
 
 #[derive(Debug, Parser, Clone, Default)]
@@ -976,8 +976,8 @@ mod imp {
     #[cfg(test)]
     mod tests {
         use super::{
-            OFFICIAL_BREW_CASK, TAP_BREW_CASK, brew_casks_in_priority_order, brew_upgrade_fallback,
-            is_newer_version, strip_html_tags,
+            brew_casks_in_priority_order, brew_upgrade_fallback, is_newer_version, strip_html_tags,
+            OFFICIAL_BREW_CASK, TAP_BREW_CASK,
         };
 
         #[test]
