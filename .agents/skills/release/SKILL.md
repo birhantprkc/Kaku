@@ -115,7 +115,7 @@ When a release fixes a bug outside this list, add the reproduction here so the n
 4. **stage:notarize**: `./scripts/notarize.sh`. Tries rcodesign first; falls back to notarytool if rcodesign fails and a notarytool profile exists.
 5. **stage:tag**: `git tag -a V<version> -m 'Release V<version>'` then `git push origin V<version>`. Idempotent: reuses an existing tag at HEAD instead of dying.
 6. **stage:upload**: `gh release create V<version>` (or `gh release edit` if it already exists) with the dmg, zip, and sha256. Title is taken from the first `# ` line of `RELEASE_NOTES.md`.
-7. **stage:homebrew-tap**: `repository_dispatch` (`kaku_release_published`) to `tw93/homebrew-tap` triggering `bump.yml`. Polls `Casks/kakuku.rb` through the GitHub contents API for the new version (default 12 attempts, 15s apart).
+7. **stage:homebrew-tap**: `repository_dispatch` (`kaku_release_published`) to `tw93/homebrew-tap` triggering `bump.yml`. Polls `Casks/kakuku.rb` through the GitHub contents API for the new version (default 12 attempts, 15s apart). The official `homebrew/cask` token is `kaku` and is bumped by Homebrew livecheck from the GitHub release; this stage only updates the personal tap for existing `tw93/tap/kakuku` installs.
 
 ## Resume after failure
 
@@ -164,7 +164,7 @@ Resume flags require the corresponding artifacts in `dist/` to still be present.
 ## After release
 
 - GitHub Release URL: `https://github.com/tw93/Kaku/releases/tag/V<version>`.
-- Homebrew users get the new version once the tap workflow finishes; verify with `brew update && brew info --cask kakuku`.
+- Official Homebrew cask users get the new version after Homebrew livecheck/bump; verify with `brew update && brew info --cask kaku`. Personal-tap users get it once the tap workflow finishes; verify with `brew info --cask tw93/tap/kakuku`.
 - Sparkle in-app updates are served from the GitHub Release assets (`kaku_for_update.zip` + `.sha256`).
 - Add the six positive reactions to the new release; this is part of shipping. Skip `-1` and `confused`.
 

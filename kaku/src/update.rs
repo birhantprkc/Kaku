@@ -1,4 +1,4 @@
-use anyhow::{anyhow, bail, Context};
+use anyhow::{Context, anyhow, bail};
 use clap::Parser;
 
 #[derive(Debug, Parser, Clone, Default)]
@@ -44,7 +44,22 @@ mod imp {
     const RELEASE_LATEST_URL: &str = "https://github.com/tw93/Kaku/releases/latest";
     const UPDATE_ZIP_NAME: &str = "kaku_for_update.zip";
     const UPDATE_SHA_NAME: &str = "kaku_for_update.zip.sha256";
-    const BREW_CASK_NAME: &str = "tw93/tap/kakuku";
+    /// Official Homebrew/homebrew-cask token.
+    const OFFICIAL_BREW_CASK: &str = "kaku";
+    /// Personal tap for installs from before the official cask existed.
+    const TAP_BREW_CASK: &str = "tw93/tap/kakuku";
+
+    fn brew_casks_in_priority_order() -> [&'static str; 2] {
+        [OFFICIAL_BREW_CASK, TAP_BREW_CASK]
+    }
+
+    fn brew_upgrade_fallback(cask_name: &str) -> &'static str {
+        if cask_name == OFFICIAL_BREW_CASK {
+            TAP_BREW_CASK
+        } else {
+            OFFICIAL_BREW_CASK
+        }
+    }
 
     #[derive(Debug, Deserialize)]
     struct GitHubRelease {
@@ -309,24 +324,13 @@ mod imp {
             return Ok(None);
         };
 
-        if is_brew_cask_installed(&brew_bin, BREW_CASK_NAME)? {
-            return Ok(Some(BrewInfo {
-                brew_bin,
-                cask_name: BREW_CASK_NAME.to_string(),
-            }));
-        }
-
-        // Old cask name "kaku" conflicts with another software in homebrew/cask.
-        // Warn and fall back to direct update so existing users are not blocked.
-        if is_brew_cask_installed(&brew_bin, "kaku")? {
-            println!(
-                "WARNING: Detected old Homebrew cask 'kaku' which conflicts with another software."
-            );
-            println!("Proceeding with direct update from GitHub for this run.");
-            println!("Please migrate when convenient:");
-            println!("  brew uninstall --cask kaku");
-            println!("  brew install --cask {}", BREW_CASK_NAME);
-            return Ok(None);
+        for cask_name in brew_casks_in_priority_order() {
+            if is_brew_cask_installed(&brew_bin, cask_name)? {
+                return Ok(Some(BrewInfo {
+                    brew_bin,
+                    cask_name: cask_name.to_string(),
+                }));
+            }
         }
 
         Ok(None)
@@ -457,11 +461,7 @@ mod imp {
             return Ok(());
         }
 
-        let fallback_name = if info.cask_name == BREW_CASK_NAME {
-            "kaku"
-        } else {
-            BREW_CASK_NAME
-        };
+        let fallback_name = brew_upgrade_fallback(&info.cask_name);
 
         let fallback = Command::new(&info.brew_bin)
             .arg("upgrade")
@@ -975,7 +975,10 @@ mod imp {
 
     #[cfg(test)]
     mod tests {
-        use super::{is_newer_version, strip_html_tags};
+        use super::{
+            OFFICIAL_BREW_CASK, TAP_BREW_CASK, brew_casks_in_priority_order, brew_upgrade_fallback,
+            is_newer_version, strip_html_tags,
+        };
 
         #[test]
         fn semver_numeric_comparison() {
@@ -1001,6 +1004,16 @@ mod imp {
                 strip_html_tags("1. **System Proxy**: works"),
                 "1. **System Proxy**: works"
             );
+        }
+
+        #[test]
+        fn official_homebrew_cask_is_preferred() {
+            assert_eq!(
+                brew_casks_in_priority_order(),
+                [OFFICIAL_BREW_CASK, TAP_BREW_CASK]
+            );
+            assert_eq!(brew_upgrade_fallback(OFFICIAL_BREW_CASK), TAP_BREW_CASK);
+            assert_eq!(brew_upgrade_fallback(TAP_BREW_CASK), OFFICIAL_BREW_CASK);
         }
 
         /// Guard the multi-entry update matrix: every provider that replaces

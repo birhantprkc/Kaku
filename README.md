@@ -27,7 +27,7 @@ Part of a trilogy: [Kaku](https://github.com/tw93/Kaku) (書く) writes code, [W
 Download the [Kaku DMG](https://github.com/tw93/Kaku/releases/latest), open it, and drag Kaku into Applications. Or install with Homebrew:
 
 ```bash
-brew install tw93/tap/kakuku
+brew install --cask kaku
 ```
 
 Open Kaku to set up shell integration. Missing optional tools can be installed through `kaku init`. Check your installed version with `kaku --version`.

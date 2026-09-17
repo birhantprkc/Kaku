@@ -53,6 +53,7 @@ make app
 - **Do not propose UI i18n / multi-language menus / a `config.language` setting.** The `rust-i18n` based Chinese UI localization (PR #362, commit `f6cfb4b`) was reverted in `b4d779a` on 2026-05-18; `language` remains in the config schema as a deprecated field for backward compat only. UI strings (menus, confirm dialogs, config TUI copy) stay as English literal strings. New UI surfaces should not introduce translation keys, locale-aware formatting, or "what if a user wants Chinese" abstractions. If a user requests a non-English UI, route to the assistant config / AI chat surface; those already accept non-English content.
 - **Do not pre-bake provider abstractions in `kaku/src/ai_config/`.** Kaku Assistant parsing, field presentation, and persistence live in `kaku/src/ai_config/tui/providers/assistant.rs`; the TUI retains its event loop and shared data types. Future extraction should move one concrete provider at a time into that existing directory. Do not add an unused trait, a `ProviderKind` enum, or stub modules. Save Copilot for last because its OAuth flow is the abstraction stress test.
 - CLI Codex readiness and GUI connection parsing both consume `tests/fixtures/codex-connection.json`. Add boundary cases there when either policy changes, and run both crates' tests.
+- Official Homebrew token is `kaku` (`brew install --cask kaku`). `tw93/tap/kakuku` remains the personal tap for people who installed before the official cask. Do not tell users the Homebrew `kaku` token is a different app.
 
 ## Maintainer Follow-up
 
