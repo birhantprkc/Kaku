@@ -9,7 +9,7 @@
 - **Canonical ScreenPoint 空间**：`cartesian_to_screen_point` 定义（全局 point × `screens[0]` 主屏 scale、Y 翻转）。`set_window_position` / `window_position` / `MouseEvent::screen_coords` / `MouseEvent::window_origin` 都在这里。
 - **窗口 backing 空间**：`MouseEvent::coords`、`dimensions.pixel_*`、UI item 布局坐标，用窗口自己屏幕的 backingScaleFactor。
 
-规则：跨空间换算一律在 `window/src/os/macos` 层做；GUI 层需要窗口原点用 `MouseEvent::window_origin`，不要用 `screen_coords - coords` 推算；居中走 `WindowOps::center()`（原生、单屏 point 空间）。`ScreenInfo.rect`（`screens()` / `resolve_geometry` / `--position` / Lua `screens()`）已统一到 canonical 空间（`nsscreen_to_screen_info` 走 `cartesian_to_screen_point`），`build_window` 不再对 resolve 出的 x/y 除 scale（除一次就是 upstream 继承的 Retina 落点折半 bug，size 的除法保留，那是 px 转 pt 给 NSWindow 用的）。
+规则：跨空间换算一律在 `window/src/os/macos` 层做；GUI 层需要窗口原点用 `MouseEvent::window_origin`，不要用 `screen_coords - coords` 推算；居中走 `WindowOps::center()`（原生、单屏 point 空间）。`ScreenInfo.rect`（`screens()` / `resolve_geometry` / `--position` / Lua `screens()`）已统一到 canonical 空间（`nsscreen_to_screen_info` 走 `cartesian_to_screen_point`），`Window::new_window`（`window/src/os/macos/window.rs`）不再对 resolve 出的 x/y 除 scale（除一次就是 upstream 继承的 Retina 落点折半 bug，size 的除法保留，那是 px 转 pt 给 NSWindow 用的）。
 
 ## 默认渲染后端是 WebGpu，CGL-only 的 wake 修复护不住它
 
