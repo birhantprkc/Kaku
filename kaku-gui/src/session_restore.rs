@@ -37,10 +37,8 @@ const WEZTERM_SURFACE_FINGERPRINT: &str = "wezterm-surface-2026-05";
 const PANE_CONTENT_CAP_LINES: usize = 1500;
 
 /// Hard byte ceiling for a single pane's serialized scrollback sidecar.
-/// The line cap above bounds text, but a `Line` can carry `ImageCell`
-/// payloads (sixel / iTerm2 images) whose `Arc<ImageData>` blobs are not
-/// counted by the line cap. An image-heavy pane could otherwise serialize
-/// to tens of MB and reload that blob on every session restore. When the
+/// Image attachments are stripped before encoding (see `write_pane_sidecar`),
+/// so this only guards unusually wide or attribute-heavy text. When the
 /// encoded sidecar exceeds this ceiling we skip persisting that pane's
 /// content (structural snapshot is unaffected) rather than write a giant
 /// file. 4 MiB leaves generous headroom for the text cap above.
@@ -375,10 +373,20 @@ fn write_bincode_atomic<T: Serialize>(
 fn write_pane_sidecar(
     content_dir: &std::path::Path,
     pane_id: PaneId,
-    lines: Vec<wezterm_term::Line>,
+    mut lines: Vec<wezterm_term::Line>,
     cols: usize,
     rows: usize,
 ) -> Option<PaneContentRef> {
+    // Every cell an image covers holds its own Arc to the same ImageData, and
+    // serde writes the whole blob once per cell, so one inline image can encode
+    // to gigabytes on the GUI thread (#559). Keep the text, drop the images.
+    for line in &mut lines {
+        for cell in line.cells_mut_for_attr_changes_only() {
+            if cell.attrs().images().is_some() {
+                cell.attrs_mut().clear_images();
+            }
+        }
+    }
     let filename = format!("pane_{pane_id}.bin");
     let path = content_dir.join(&filename);
     let line_count = lines.len();
@@ -1646,6 +1654,46 @@ mod tests {
             content_dir: String::new(),
             window: sample_window("Test Window"),
         }
+    }
+
+    #[test]
+    fn image_cells_do_not_blow_up_the_scrollback_sidecar() {
+        use termwiz::cell::CellAttributes;
+        use termwiz::image::{ImageCell, ImageData};
+        use termwiz::surface::{TextureCoordinate, SEQ_ZERO};
+
+        // One image stretched over a row: every cell shares the same
+        // Arc<ImageData>, but serde writes the full blob once per cell (#559).
+        let image = Arc::new(ImageData::with_raw_data(vec![0u8; 128 * 1024]));
+        let origin = ordered_float::NotNan::new(0.0f32).unwrap();
+        let mut line = wezterm_term::Line::from_text(
+            &"x".repeat(100),
+            &CellAttributes::default(),
+            SEQ_ZERO,
+            None,
+        );
+        for cell in line.cells_mut_for_attr_changes_only() {
+            cell.attrs_mut().attach_image(ImageCell::new(
+                TextureCoordinate::new(origin, origin),
+                TextureCoordinate::new(origin, origin),
+                Arc::clone(&image),
+            ));
+        }
+
+        let dir = tempfile::tempdir().unwrap();
+        let content_ref = write_pane_sidecar(dir.path(), 7.into(), vec![line], 100, 1)
+            .expect("image-heavy pane still gets a sidecar");
+        let size = std::fs::metadata(dir.path().join(&content_ref.filename))
+            .unwrap()
+            .len();
+        assert!(size < 64 * 1024, "sidecar is {} bytes", size);
+
+        let payload = load_pane_payload(dir.path(), &content_ref).expect("payload");
+        let restored = &payload.lines[0];
+        assert_eq!(restored.as_str().trim_end(), "x".repeat(100));
+        assert!(restored
+            .visible_cells()
+            .all(|c| c.attrs().images().is_none()));
     }
 
     #[test]
