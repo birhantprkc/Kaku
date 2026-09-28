@@ -3,7 +3,7 @@
 use crate::shell::{resolve_shell_kind, ManagedShell, ShellKind};
 use clap::Parser;
 use std::fs;
-use std::io::{self, ErrorKind, Write};
+use std::io::{self, ErrorKind, IsTerminal, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{Duration, Instant};
@@ -26,22 +26,41 @@ pub struct DoctorCommand {
 impl DoctorCommand {
     pub fn run(&self) -> anyhow::Result<()> {
         let report = build_report(self.shell);
-        print!("{}", render_text_report(&report));
+        let mut text = render_text_report(&report);
+        print!("{}", text);
 
         if self.fix {
-            run_auto_fix_and_rerun_report(self.shell);
-            return Ok(());
-        }
-
-        if self.prompt_fix && should_offer_auto_fix(&report) {
+            text = run_auto_fix_and_rerun_report(self.shell);
+        } else if self.prompt_fix && should_offer_auto_fix(&report) {
             match prompt_yes_no("Run safe auto-fix now with `kaku init --update-only`? [Y/n] ") {
-                Ok(true) => run_auto_fix_and_rerun_report(self.shell),
+                Ok(true) => text = run_auto_fix_and_rerun_report(self.shell),
                 Ok(false) => {}
                 Err(err) => eprintln!("Auto-fix prompt skipped: {}", err),
             }
         }
 
+        write_diagnostics_bundle(&text);
         Ok(())
+    }
+}
+
+fn write_diagnostics_bundle(report_text: &str) {
+    println!();
+    println!("Collecting diagnostics...");
+    let started = Instant::now();
+    match crate::diagnostics::write_bundle(report_text) {
+        Ok(zip) => {
+            let home = config::HOME_DIR.display().to_string();
+            let shown = zip.display().to_string().replacen(&home, "~", 1);
+            println!(
+                "Diagnostics saved to {shown} ({:.1}s). It stays on this Mac; attach it when you report an issue.",
+                started.elapsed().as_secs_f64()
+            );
+            if io::stdout().is_terminal() {
+                let _ = Command::new("/usr/bin/open").arg("-R").arg(&zip).status();
+            }
+        }
+        Err(err) => println!("Diagnostics not saved: {:#}", err),
     }
 }
 
@@ -62,7 +81,7 @@ fn prompt_yes_no(question: &str) -> anyhow::Result<bool> {
     Ok(answer.is_empty() || answer == "y" || answer == "yes")
 }
 
-fn run_auto_fix_and_rerun_report(shell: Option<ManagedShell>) {
+fn run_auto_fix_and_rerun_report(shell: Option<ManagedShell>) -> String {
     println!("Auto-fix: running `kaku init --update-only`");
     let init_cmd = crate::init::InitCommand {
         update_only: true,
@@ -76,7 +95,9 @@ fn run_auto_fix_and_rerun_report(shell: Option<ManagedShell>) {
     let after = build_report(shell);
     println!();
     println!("After Auto-fix");
-    print!("{}", render_text_report(&after));
+    let text = render_text_report(&after);
+    print!("{}", text);
+    text
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1325,7 +1346,7 @@ fn kaku_bin_candidates() -> Vec<PathBuf> {
     candidates
 }
 
-fn doctor_version_string() -> String {
+pub(crate) fn doctor_version_string() -> String {
     let version = config::wezterm_version();
     if version == "someone forgot to call assign_version_info" {
         env!("CARGO_PKG_VERSION").to_string()

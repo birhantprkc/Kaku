@@ -28,6 +28,7 @@ humantime.workspace = true
 log.workspace = true
 mux.workspace = true
 portable-pty.workspace = true
+regex.workspace = true
 promise.workspace = true
 ratatui.workspace = true
 rusqlite.workspace = true

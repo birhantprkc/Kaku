@@ -31,6 +31,7 @@ mod chat;
 mod cli;
 mod config_cmd;
 mod config_tui;
+mod diagnostics;
 mod doctor;
 mod init;
 mod kaku_theme;

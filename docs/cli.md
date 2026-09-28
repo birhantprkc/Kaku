@@ -38,6 +38,8 @@ kaku config
 
 Check the Kaku app bundle, PATH entries, and zsh or fish shell integration. Use this first if something feels broken.
 
+Every run also writes a diagnostic bundle to `~/.local/share/kaku/diagnostics/Kaku-Diagnose.zip`: the report, logs, recent crash reports, a short sample of a running Kaku, and any GUI stalls Kaku recorded on its own. Home paths, the host name, MAC addresses, serial numbers and credential-looking values are replaced first, `assistant.toml` is never read, and nothing leaves your Mac. Attach the zip when you report an issue. If Kaku itself is frozen, run `kaku doctor` from Terminal.app.
+
 ```bash
 kaku doctor
 kaku doctor --shell fish       # check fish even when $SHELL points to zsh

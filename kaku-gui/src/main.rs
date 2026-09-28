@@ -119,6 +119,7 @@ mod session_restore;
 mod shapecache;
 mod soul;
 mod spawn;
+mod stall_watchdog;
 mod startup_trace;
 mod stats;
 mod tabbar;
@@ -881,6 +882,7 @@ fn run_terminal_gui(opts: StartCommand, default_domain_name: Option<String>) -> 
     let _ = ::window::drain_spawn_queue_burst(8);
 
     maybe_show_configuration_error_window();
+    stall_watchdog::start();
     startup_trace::mark("gui.run_forever() entering event loop");
     gui.run_forever()
 }

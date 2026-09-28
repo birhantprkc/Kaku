@@ -2910,6 +2910,7 @@ dependencies = [
  "portable-pty",
  "promise",
  "ratatui",
+ "regex",
  "rusqlite",
  "serde",
  "serde_json",
